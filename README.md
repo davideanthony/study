@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stufy
 
-## Getting Started
+Piattaforma web per condividere appunti universitari. MVP semplice: account, upload PDF, ricerca, download, like (cuori) e commenti.
 
-First, run the development server:
+**Stack:** Next.js · Supabase (Auth, DB, Storage) · Vercel
+
+## Funzionalità
+
+| Pagina | Route | Descrizione |
+|--------|-------|-------------|
+| Homepage | `/` | Ricerca, università popolari, appunti recenti |
+| Cerca | `/cerca` | Filtri per titolo, università, corso |
+| Carica | `/carica` | Upload PDF (richiede login) |
+| Appunto | `/appunti/[id]` | Preview, download, like (cuore), commenti |
+| Profilo | `/profilo` | Appunti caricati, download ricevuti |
+
+## Setup locale
+
+### 1. Supabase
+
+1. Crea un progetto su [supabase.com](https://supabase.com)
+2. In **SQL Editor**, esegui in ordine:
+   - `supabase/migrations/001_initial.sql`
+   - `supabase/migrations/002_note_comments.sql`
+   - `supabase/migrations/003_username_normalize.sql`
+   - `supabase/migrations/004_mvp_hardening.sql`
+3. In **Authentication → URL Configuration**, aggiungi:
+   - Site URL: `http://localhost:3000`
+   - Redirect URLs: `http://localhost:3000/auth/callback`
+4. (Opzionale) Disattiva **Confirm email** in Authentication → Providers → Email per test rapidi in locale
+5. Copia **Project URL** e **anon key** da Settings → API
+
+### 2. Variabili d'ambiente
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Compila `.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+# Opzionale (Open Graph in produzione):
+# NEXT_PUBLIC_SITE_URL=https://tuo-dominio.vercel.app
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Avvia
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Apri [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy su Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Push del repo su GitHub
+2. Import su [vercel.com](https://vercel.com)
+3. Aggiungi le stesse variabili `NEXT_PUBLIC_SUPABASE_*`
+4. In Supabase, aggiorna Site URL e Redirect URLs con il dominio Vercel (es. `https://stufy.vercel.app/auth/callback`)
 
-## Deploy on Vercel
+## Struttura
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+  app/           # Pagine e server actions
+  components/    # UI condivisa
+  lib/           # Supabase client, helper
+  types/         # Tipi TypeScript
+supabase/
+  migrations/    # Schema SQL
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Schema dati
+
+- `profiles` — utenti (collegati ad Auth)
+- `notes` — appunti PDF
+- `note_likes` — mi piace (un cuore per utente per appunto)
+- `note_comments` — commenti sotto ogni appunto
+- Storage bucket `notes` — file PDF pubblici in lettura

@@ -1,26 +1,126 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Palette: menta · panna · salvia · grigio chiaro */
+  --cream: #faf7f2;
+  --mint: #b8e8d4;
+  --mint-light: #d4f0e4;
+  --sage: #7a9b76;
+  --sage-dark: #5f7f5c;
+  --gray-light: #e8e5df;
+  --muted: #6b736e;
+
+  --background: var(--cream);
+  --surface: #fffdf9;
+  --foreground: #3f4a44;
+
+  --brand: var(--sage);
+  --brand-dark: var(--sage-dark);
+  --accent: var(--mint);
+  --accent-dark: #9fd4b8;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-mint: var(--mint);
+  --color-mint-light: var(--mint-light);
+  --color-sage: var(--sage);
+  --color-gray-light: var(--gray-light);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-nunito);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --shadow-soft: 0 2px 12px rgb(122 155 118 / 0.1), 0 1px 3px rgb(63 74 68 / 0.05);
+  --shadow-card: 0 4px 20px rgb(122 155 118 / 0.12), 0 2px 8px rgb(63 74 68 / 0.06);
+  --shadow-lift: 0 8px 28px rgb(122 155 118 / 0.14), 0 4px 12px rgb(63 74 68 / 0.08);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Card / panel con ombra leggera */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--gray-light);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.input-field {
+  border: 1px solid var(--gray-light);
+  background: var(--surface);
+  border-radius: 0.875rem;
+  color: var(--foreground);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.input-field::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--sage);
+  box-shadow: 0 0 0 3px rgb(122 155 118 / 0.15);
+}
+
+.btn-primary {
+  background: var(--sage);
+  color: var(--surface);
+  border-radius: 0.875rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-soft);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  background: var(--sage-dark);
+  box-shadow: var(--shadow-card);
+}
+
+.btn-accent {
+  background: var(--mint);
+  color: var(--sage-dark);
+  border-radius: 9999px;
+  font-weight: 600;
+  box-shadow: var(--shadow-soft);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.btn-accent:hover {
+  background: var(--accent-dark);
+  box-shadow: var(--shadow-card);
+}
+
+.chip {
+  border-radius: 9999px;
+  border: 1px solid var(--gray-light);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.chip:hover {
+  border-color: var(--sage);
+  background: var(--mint-light);
+  box-shadow: var(--shadow-card);
 }
