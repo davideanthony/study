@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isBlockedBetween } from "@/lib/blocks";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -26,6 +28,19 @@ export async function toggleLike(noteId: string) {
   if (existing) {
     await supabase.from("note_likes").delete().eq("id", existing.id);
   } else {
+    const { data: note } = await supabase
+      .from("notes")
+      .select("user_id")
+      .eq("id", noteId)
+      .single();
+
+    if (note && (await isBlockedBetween(supabase, user.id, note.user_id))) {
+      return;
+    }
+
+    const limit = await checkRateLimit(supabase, user.id, "like");
+    if (!limit.allowed) return;
+
     await supabase.from("note_likes").insert({ note_id: noteId, user_id: user.id });
   }
 
@@ -40,6 +55,21 @@ export async function addComment(noteId: string, formData: FormData) {
 
   const body = String(formData.get("body") ?? "").trim();
   if (!body) return;
+
+  const limit = await checkRateLimit(supabase, user.id, "comment");
+  if (!limit.allowed) {
+    throw new Error(limit.message);
+  }
+
+  const { data: note } = await supabase
+    .from("notes")
+    .select("user_id")
+    .eq("id", noteId)
+    .single();
+
+  if (note && (await isBlockedBetween(supabase, user.id, note.user_id))) {
+    throw new Error("Non puoi commentare questo appunto.");
+  }
 
   const { error } = await supabase.from("note_comments").insert({
     note_id: noteId,
@@ -66,17 +96,25 @@ export async function deleteComment(commentId: string, noteId: string) {
   revalidatePath(`/appunti/${noteId}`);
 }
 
-export async function recordDownload(noteId: string) {
+/** Incrementa download solo per utenti loggati (dedupe 24h lato DB). */
+export async function recordDownload(noteId: string): Promise<boolean> {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const { error } = await supabase.rpc("increment_note_download", {
+  if (!user) return false;
+
+  const { data: counted } = await supabase.rpc("increment_note_download", {
     p_note_id: noteId,
   });
 
-  if (error) return;
+  if (counted) {
+    revalidatePath(`/appunti/${noteId}`);
+    revalidatePath("/profilo");
+    revalidatePath("/cerca");
+    revalidatePath("/");
+  }
 
-  revalidatePath(`/appunti/${noteId}`);
-  revalidatePath("/profilo");
-  revalidatePath("/cerca");
-  revalidatePath("/");
+  return !!counted;
 }

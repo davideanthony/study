@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CheckEmailModal } from "@/components/CheckEmailModal";
+import { OAuthButtons } from "@/components/OAuthButtons";
 import { signUp } from "../actions";
 
 type PageProps = {
@@ -90,6 +91,10 @@ export default async function SignupPage({ searchParams }: PageProps) {
           Registrati
         </button>
       </form>
+
+      <div className="card mt-6 rounded-2xl p-6">
+        <OAuthButtons />
+      </div>
 
       <p className="mt-6 text-center text-sm text-muted">
         Hai già un account?{" "}

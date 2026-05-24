@@ -3,12 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import { getNoteComments, formatCommentDate } from "@/lib/notes";
 import { CommentForm } from "@/components/CommentForm";
 import { DeleteCommentButton } from "@/components/DeleteCommentButton";
+import { ReportButton } from "@/components/ReportButton";
 
 type CommentsSectionProps = {
   noteId: string;
+  returnTo: string;
 };
 
-export async function CommentsSection({ noteId }: CommentsSectionProps) {
+export async function CommentsSection({ noteId, returnTo }: CommentsSectionProps) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -77,6 +79,12 @@ export async function CommentsSection({ noteId }: CommentsSectionProps) {
                     <p className="mt-1.5 text-sm leading-relaxed text-foreground">
                       {comment.body}
                     </p>
+                    <div className="mt-2">
+                      <ReportButton
+                        commentId={comment.id}
+                        returnTo={returnTo}
+                      />
+                    </div>
                   </div>
                   {isOwn && (
                     <DeleteCommentButton commentId={comment.id} noteId={noteId} />

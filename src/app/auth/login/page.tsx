@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signIn } from "../actions";
+import { OAuthButtons } from "@/components/OAuthButtons";
 
 type PageProps = {
   searchParams: Promise<{ error?: string; next?: string }>;
@@ -24,11 +25,33 @@ export default async function LoginPage({ searchParams }: PageProps) {
       <form action={signIn} className="space-y-4">
         {next && <input type="hidden" name="next" value={next} />}
         <AuthField label="Email" name="email" type="email" required />
-        <AuthField label="Password" name="password" type="password" required />
+        <div>
+          <div className="flex items-center justify-between">
+            <label htmlFor="password" className="block text-sm font-medium text-muted">
+              Password
+            </label>
+            <Link
+              href="/auth/forgot-password"
+              className="text-xs font-medium text-sage hover:underline"
+            >
+              Password dimenticata?
+            </Link>
+          </div>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            className="input-field mt-1 w-full px-4 py-3 shadow-[var(--shadow-soft)]"
+          />
+        </div>
         <button type="submit" className="btn-primary w-full py-3">
           Accedi
         </button>
       </form>
+      <div className="mt-6">
+        <OAuthButtons next={next} />
+      </div>
     </AuthLayout>
   );
 }
@@ -51,7 +74,7 @@ function AuthLayout({
       <h1 className="text-2xl font-bold text-foreground">{title}</h1>
       <p className="mt-1 text-muted">{subtitle}</p>
       {error && (
-        <p className="mt-4 rounded-xl border border-sage/20 bg-mint-light/60 px-4 py-3 text-sm text-sage-dark shadow-[var(--shadow-soft)]">
+        <p className="mt-4 rounded-xl border border-sage/20 bg-mint-light/60 px-4 py-3 text-sm text-sage-dark">
           {decodeURIComponent(error)}
         </p>
       )}

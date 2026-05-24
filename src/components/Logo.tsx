@@ -8,15 +8,16 @@ export function Logo() {
   return (
     <Link
       href="/"
-      className="inline-flex items-center transition hover:opacity-90"
+      className="relative block h-10 w-[10.5rem] shrink-0 transition hover:opacity-90 sm:h-11 sm:w-[12.5rem]"
+      aria-label={SITE_NAME}
     >
       <Image
         src={src}
-        alt={SITE_NAME}
-        width={176}
-        height={40}
+        alt=""
+        width={352}
+        height={80}
         unoptimized
-        className="h-9 w-auto max-w-[9.5rem] object-contain object-left sm:h-10 sm:max-w-[11rem]"
+        className="absolute left-0 top-1/2 h-[4.25rem] w-auto max-w-[12.5rem] -translate-y-1/2 object-contain object-left sm:h-[4.75rem] sm:max-w-[14.5rem]"
         priority
       />
     </Link>

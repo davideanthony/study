@@ -75,6 +75,28 @@ body {
   box-shadow: 0 0 0 3px rgb(122 155 118 / 0.15);
 }
 
+/* Fix testo bianco su select/datalist/autofill (Chrome/Safari) */
+.input-field,
+select.input-field,
+select {
+  color: var(--foreground);
+  background-color: var(--surface);
+  color-scheme: light;
+}
+
+.input-field option,
+select option {
+  color: var(--foreground);
+  background-color: var(--surface);
+}
+
+.input-field:-webkit-autofill,
+.input-field:-webkit-autofill:hover,
+.input-field:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--foreground) !important;
+  box-shadow: 0 0 0 1000px var(--surface) inset !important;
+}
+
 .btn-primary {
   background: var(--sage);
   color: var(--surface);

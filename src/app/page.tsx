@@ -3,24 +3,29 @@ import { SearchBar } from "@/components/SearchBar";
 import { NoteCard } from "@/components/NoteCard";
 import { POPULAR_UNIVERSITIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
-import { getNoteStats } from "@/lib/notes";
+import { attachListStats } from "@/lib/notes";
+import { filterByBlocked, getBlockedUserIds } from "@/lib/blocks";
 import type { NoteWithAuthor } from "@/types/database";
 
 export default async function HomePage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: recentNotes } = await supabase
     .from("notes")
-    .select("*, profiles(username, full_name)")
+    .select("*, profiles(username, full_name, avatar_url)")
     .order("created_at", { ascending: false })
     .limit(6);
 
-  const notesWithStats = await Promise.all(
-    ((recentNotes ?? []) as NoteWithAuthor[]).map(async (note) => {
-      const stats = await getNoteStats(supabase, note.id);
-      return { note, stats };
-    }),
+  const blocked = user ? await getBlockedUserIds(supabase, user.id) : new Set<string>();
+  const filteredNotes = filterByBlocked(
+    (recentNotes ?? []) as NoteWithAuthor[],
+    blocked,
   );
+
+  const notesWithStats = await attachListStats(supabase, filteredNotes, user?.id);
 
   return (
     <div>
@@ -68,11 +73,7 @@ export default async function HomePage() {
           <h2 className="text-lg font-semibold text-foreground">Appunti recenti</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {notesWithStats.map(({ note, stats }) => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                likeCount={stats.likeCount}
-              />
+              <NoteCard key={note.id} note={note} likeCount={stats.likeCount} />
             ))}
           </div>
         </section>

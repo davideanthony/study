@@ -49,57 +49,74 @@ export const ITALIAN_UNIVERSITIES = [
   "Università di Chieti-Pescara (G. d'Annunzio)",
   "Università di Enna Kore",
   "Università di Ferrara",
-  "Università di Firenze",
   "Università di Foggia",
   "Università di Genova",
-  "Università di Insubria",
   "Università di L'Aquila",
   "Università di Macerata",
   "Università di Messina",
   "Università di Milano-Bicocca",
   "Università di Modena e Reggio Emilia",
-  "Università di Napoli L'Orientale",
   "Università di Napoli Parthenope",
+  "Università di Napoli L'Orientale",
   "Università di Padova",
   "Università di Palermo",
   "Università di Parma",
   "Università di Pavia",
   "Università di Perugia",
   "Università di Pisa",
-  "Università di Reggio Calabria",
+  "Università di Roma Tor Vergata",
   "Università di Roma Tre",
   "Università di Salerno",
   "Università di Sassari",
   "Università di Siena",
   "Università di Teramo",
   "Università di Torino",
-  "Università di Tor Vergata — Roma",
   "Università di Trento",
   "Università di Trieste",
   "Università di Udine",
-  "Università di Urbino Carlo Bo",
+  "Università di Urbino",
   "Università di Verona",
-  "Università IUAV — Venezia",
-  "Università LUMSA — Roma",
+  "Università di Firenze",
   "Università Statale — Milano",
-  "Università della Campania Luigi Vanvitelli",
-  "Università Internazionale UNINT — Roma",
-  "Università Link Campus — Roma",
-  "Università Suor Orsola Benincasa — Napoli",
-  "Università Europea di Roma",
-  "Università Vita-Salute San Raffaele — Milano",
-  "Università Campus Bio-Medico — Roma",
-  "Università degli Studi del Sannio — Benevento",
-  "Università degli Studi della Basilicata — Potenza",
-  "Università degli Studi di Fisciano (SA)",
+  "Università del Sannio — Benevento",
+  "Università degli Studi di Milano",
 ] as const;
 
-/** Lista unica ordinata alfabeticamente (per datalist) */
 export const ALL_UNIVERSITIES = [
   ...new Set([...POPULAR_UNIVERSITIES, ...ITALIAN_UNIVERSITIES]),
 ].sort((a, b) => a.localeCompare(b, "it"));
 
-export const SITE_NAME = "Stufy";
+export const ACADEMIC_YEARS = [
+  "2025/2026",
+  "2024/2025",
+  "2023/2024",
+  "2022/2023",
+  "2021/2022",
+] as const;
 
-/** Incrementa quando cambi images/logo1.png (evita cache browser/Next) */
-export const LOGO_VERSION = "7";
+export const SEMESTERS = ["1", "2", "Annualità unica"] as const;
+
+export const REPORT_REASONS = [
+  "Contenuto inappropriato",
+  "Violazione copyright",
+  "Spam o pubblicità",
+  "Informazioni false",
+  "Altro",
+] as const;
+
+export const SITE_NAME = "Stufy";
+export const LOGO_VERSION = "2";
+
+/** Tag suggeriti quando il DB non ne ha ancora abbastanza. */
+export const SUGGESTED_TAGS = [
+  "esame",
+  "riassunto",
+  "esercizi",
+  "teoria",
+  "laboratorio",
+  "semestre-1",
+  "semestre-2",
+  "orale",
+  "scritto",
+  "formulario",
+] as const;

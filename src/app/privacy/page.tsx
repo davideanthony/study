@@ -32,6 +32,20 @@ export default function PrivacyPage() {
             <li>Contenuti: PDF caricati, titolo, corso, università, descrizione.</li>
             <li>Interazioni: like (cuori), commenti, conteggio download.</li>
             <li>Tecnici: cookie di sessione per l&apos;autenticazione (Supabase).</li>
+            <li>
+              Statistiche di utilizzo aggregate tramite{" "}
+              <a
+                href="https://plausible.io/privacy-policy"
+                className="font-medium text-sage hover:underline"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Plausible Analytics
+              </a>
+              : pagine visitate ed eventi anonimi (es. registrazione, upload, download).
+              Plausible non usa cookie di profilazione e non raccoglie dati personali
+              identificativi per finalità pubblicitarie.
+            </li>
           </ul>
         </section>
 
@@ -41,7 +55,9 @@ export default function PrivacyPage() {
             Per permetterti di registrarti, caricare e cercare appunti, mostrare il tuo
             profilo pubblico e gestire like e commenti. I PDF sono memorizzati su
             infrastruttura cloud (Supabase Storage) e sono consultabili dagli utenti del
-            sito salvo rimozione da parte tua.
+            sito salvo rimozione da parte tua. Le statistiche Plausible ci aiutano a
+            capire come viene usato il servizio (es. quali funzioni sono più utili), in
+            forma aggregata.
           </p>
         </section>
 
@@ -49,15 +65,17 @@ export default function PrivacyPage() {
           <h2 className="font-semibold text-foreground">Base giuridica</h2>
           <p className="mt-2">
             Esecuzione del servizio richiesto (art. 6.1.b GDPR) e, ove applicabile,
-            legittimo interesse a far funzionare una community studentesca (art. 6.1.f).
+            legittimo interesse a far funzionare una community studentesca e migliorare il
+            sito con metriche aggregate (art. 6.1.f).
           </p>
         </section>
 
         <section>
           <h2 className="font-semibold text-foreground">Condivisione</h2>
           <p className="mt-2">
-            Utilizziamo Supabase (hosting database, autenticazione e file) e Vercel
-            (hosting dell&apos;applicazione). Non vendiamo i tuoi dati a terzi.
+            Utilizziamo Supabase (hosting database, autenticazione e file), Vercel
+            (hosting dell&apos;applicazione) e Plausible (analytics privacy-friendly).
+            Non vendiamo i tuoi dati a terzi.
           </p>
         </section>
 
@@ -65,8 +83,9 @@ export default function PrivacyPage() {
           <h2 className="font-semibold text-foreground">I tuoi diritti</h2>
           <p className="mt-2">
             Puoi richiedere accesso, rettifica o cancellazione dei dati scrivendo al
-            responsabile del servizio. Puoi eliminare i tuoi appunti dal profilo e
-            aggiornare username e nome dalla pagina modifica profilo.
+            responsabile del servizio. Puoi eliminare i tuoi appunti dal profilo,
+            aggiornare username e nome dalla pagina modifica profilo, oppure eliminare
+            l&apos;intero account dalla stessa pagina (sezione &quot;Elimina account&quot;).
           </p>
         </section>
 

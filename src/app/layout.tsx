@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Nunito } from "next/font/google";
 import { Header } from "@/components/Header";
+import { PlausibleProvider } from "@/components/PlausibleProvider";
 import { SITE_NAME, LOGO_VERSION } from "@/lib/constants";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -61,12 +62,16 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <footer className="border-t border-gray-light bg-surface/60 py-8 text-center text-sm text-muted shadow-[var(--shadow-soft)]">
           <p>{SITE_NAME} — appunti universitari, semplici.</p>
-          <p className="mt-2">
+          <p className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
             <Link href="/privacy" className="font-medium text-sage hover:underline">
               Privacy
             </Link>
+            <Link href="/termini" className="font-medium text-sage hover:underline">
+              Termini
+            </Link>
           </p>
         </footer>
+        <PlausibleProvider />
       </body>
     </html>
   );
