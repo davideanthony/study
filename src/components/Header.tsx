@@ -22,8 +22,8 @@ export async function Header() {
   }
 
   return (
-    <header className="border-b border-gray-light bg-surface/85 shadow-[var(--shadow-soft)] backdrop-blur-sm">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-3 sm:gap-4">
+    <header className="overflow-visible border-b border-gray-light bg-surface/85 shadow-[var(--shadow-soft)] backdrop-blur-sm">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 overflow-visible px-4 py-2.5 sm:gap-4">
         <Logo />
         <nav className="flex min-w-0 flex-1 items-center justify-end gap-2 text-sm font-medium sm:gap-4">
           <Link href="/cerca" className="text-muted transition hover:text-sage">

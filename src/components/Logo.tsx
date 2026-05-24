@@ -8,7 +8,7 @@ export function Logo() {
   return (
     <Link
       href="/"
-      className="flex shrink-0 items-center transition hover:opacity-90"
+      className="-my-2.5 flex shrink-0 items-center transition hover:opacity-90 sm:-my-3"
       aria-label={SITE_NAME}
     >
       <Image
@@ -17,7 +17,7 @@ export function Logo() {
         width={352}
         height={80}
         unoptimized
-        className="h-10 w-auto max-w-[9.5rem] object-contain object-left sm:h-11 sm:max-w-[11.5rem]"
+        className="h-[4rem] w-auto max-w-[min(14rem,54vw)] object-contain object-left sm:h-[4.25rem] sm:max-w-[15.5rem]"
         priority
       />
     </Link>
