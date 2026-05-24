@@ -23,9 +23,9 @@ export async function Header() {
 
   return (
     <header className="border-b border-gray-light bg-surface/85 shadow-[var(--shadow-soft)] backdrop-blur-sm">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 overflow-visible px-4 py-2.5">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-3 sm:gap-4">
         <Logo />
-        <nav className="flex items-center gap-3 text-sm font-medium sm:gap-4">
+        <nav className="flex min-w-0 flex-1 items-center justify-end gap-2 text-sm font-medium sm:gap-4">
           <Link href="/cerca" className="text-muted transition hover:text-sage">
             Cerca
           </Link>
@@ -43,7 +43,8 @@ export async function Header() {
               <NotificationsBell />
               <Link
                 href="/profilo"
-                className="rounded-full bg-mint-light px-3 py-1.5 text-sage-dark shadow-[var(--shadow-soft)]"
+                title={username ?? "Profilo"}
+                className="max-w-[6.5rem] shrink truncate rounded-full bg-mint-light px-2.5 py-1.5 text-sage-dark shadow-[var(--shadow-soft)] sm:max-w-[10rem] sm:px-3"
               >
                 {username ?? "Profilo"}
               </Link>
