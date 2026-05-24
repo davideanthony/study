@@ -12,7 +12,7 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error(error);
-    void import("@/lib/monitoring").then(({ captureClientException }) =>
+    void import("@/lib/monitoring-client").then(({ captureClientException }) =>
       captureClientException(error),
     );
   }, [error]);
