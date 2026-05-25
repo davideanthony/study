@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCachedUser } from "@/lib/auth";
+import { NOTE_LIST_COLUMNS, asNoteWithAuthor } from "@/lib/note-columns";
 import { getNoteStats, getPublicFileUrl } from "@/lib/notes";
 import { buildCercaUrl } from "@/lib/search-params";
 import { LikeButton } from "@/components/LikeButton";
@@ -34,19 +37,17 @@ export default async function AppuntoPage({ params, searchParams }: PageProps) {
   const { id } = await params;
   const { reported, uploaded } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
 
   const { data: note } = await supabase
     .from("notes")
-    .select("*, profiles(username, full_name, avatar_url)")
+    .select(NOTE_LIST_COLUMNS)
     .eq("id", id)
     .single();
 
   if (!note) notFound();
 
-  const typedNote = note as NoteWithAuthor & { version_number?: number };
+  const typedNote = asNoteWithAuthor(note);
 
   if (user && user.id !== typedNote.user_id) {
     const blocked = await isBlockedBetween(supabase, user.id, typedNote.user_id);
@@ -201,7 +202,24 @@ export default async function AppuntoPage({ params, searchParams }: PageProps) {
         </div>
       </div>
 
-      <CommentsSection noteId={id} returnTo={`/appunti/${id}`} />
+      <Suspense
+        fallback={
+          <section className="mt-10 border-t border-gray-light pt-8">
+            <div className="h-6 w-32 animate-pulse rounded bg-mint-light/40" />
+            <div className="mt-4 space-y-3">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="card h-20 animate-pulse rounded-xl bg-mint-light/25"
+                  aria-hidden
+                />
+              ))}
+            </div>
+          </section>
+        }
+      >
+        <CommentsSection noteId={id} returnTo={`/appunti/${id}`} />
+      </Suspense>
     </div>
   );
 }

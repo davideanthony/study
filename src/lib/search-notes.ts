@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { NOTE_LIST_COLUMNS, asNotesWithAuthor } from "@/lib/note-columns";
 import type { NoteSort } from "@/lib/search-params";
 import type { NoteWithAuthor } from "@/types/database";
 
@@ -29,7 +30,7 @@ export async function searchNotes(
 ): Promise<NoteSearchResult> {
   let query = supabase
     .from("notes")
-    .select("*, profiles(username, full_name, avatar_url)", { count: "exact" });
+    .select(NOTE_LIST_COLUMNS, { count: "exact" });
 
   if (params.universita?.trim()) {
     query = query.ilike("university", `%${params.universita.trim()}%`);
@@ -84,7 +85,7 @@ export async function searchNotes(
   }
 
   return {
-    notes: (data ?? []) as NoteWithAuthor[],
+    notes: asNotesWithAuthor(data),
     total: count ?? 0,
   };
 }

@@ -9,7 +9,7 @@ Piattaforma web per condividere appunti universitari.
 | Area | Dettaglio |
 |------|-----------|
 | Auth | Email/password, recupero password, Google/Apple OAuth, cambio password |
-| Appunti | Upload/modifica PDF (max **100 MB**), validazione magic bytes, duplicati, like, salvati |
+| Appunti | Upload/modifica PDF (max **20 MB**), estrazione testo in background, duplicati, like, salvati |
 | Ricerca | Filtri, ordinamento, paginazione, **full-text su PDF** (PostgreSQL FTS) |
 | Social | Follow, blocca utente, **messaggi DM**, notifiche in-app, profili |
 | Tag | **Obbligatorio** (min 1), suggerimenti popolari, filtro ricerca + **full-text** |
@@ -23,7 +23,7 @@ Piattaforma web per condividere appunti universitari.
 ### 1. Supabase
 
 1. Crea un progetto su [supabase.com](https://supabase.com)
-2. In **SQL Editor**, esegui in ordine tutte le migration in `supabase/migrations/` (001 → **009**)
+2. In **SQL Editor**, esegui in ordine tutte le migration in `supabase/migrations/` (001 → **010**)
 3. In **Authentication → URL Configuration**:
    - Site URL: `http://localhost:3000`
    - Redirect URLs: `http://localhost:3000/auth/callback`
@@ -65,6 +65,10 @@ Variabili consigliate:
 | `NEXT_PUBLIC_SENTRY_DSN` | Opzionale, errori client (può coincidere con `SENTRY_DSN`) |
 
 Aggiorna redirect URL Supabase con il dominio di produzione. Esegui anche la migration **007** per le notifiche realtime.
+
+## Performance
+
+Vedi [docs/PERFORMANCE.md](docs/PERFORMANCE.md) per cache, logo AVIF, indici DB e deploy.
 
 ## Schema dati (principale)
 

@@ -5,6 +5,7 @@ import { NoteCard } from "@/components/NoteCard";
 import { DeleteNoteButton } from "@/components/DeleteNoteButton";
 import { signOut } from "@/app/auth/actions";
 import { attachListStats } from "@/lib/notes";
+import { NOTE_LIST_COLUMNS, asNotesWithAuthor } from "@/lib/note-columns";
 import type { NoteWithAuthor } from "@/types/database";
 import { PlausibleConversion } from "@/components/PlausibleConversion";
 
@@ -31,11 +32,11 @@ export default async function ProfiloPage({ searchParams }: PageProps) {
 
   const { data: myNotes } = await supabase
     .from("notes")
-    .select("*, profiles(username, full_name, avatar_url)")
+    .select(NOTE_LIST_COLUMNS)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  const notes = (myNotes ?? []) as NoteWithAuthor[];
+  const notes = asNotesWithAuthor(myNotes);
   const totalDownloads = notes.reduce((sum, n) => sum + n.download_count, 0);
   const notesWithStats = await attachListStats(supabase, notes, user.id);
 

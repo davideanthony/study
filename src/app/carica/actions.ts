@@ -1,13 +1,14 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { findDuplicateNotes } from "@/lib/duplicates";
-import { extractPdfText } from "@/lib/pdf-extract";
 import { validatePdfFileContent } from "@/lib/pdf-validation";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { parseTagInput, syncNoteTags, validateTagsInput } from "@/lib/tags";
+import { schedulePdfTextExtraction } from "@/lib/pdf-text-job";
+import { PDF_STORAGE_CACHE_CONTROL } from "@/lib/storage";
 
 export async function uploadNote(formData: FormData) {
   const supabase = await createClient();
@@ -66,13 +67,13 @@ export async function uploadNote(formData: FormData) {
 
   const noteId = crypto.randomUUID();
   const filePath = `${user.id}/${noteId}.pdf`;
-  const pdfText = await extractPdfText(pdfCheck.buffer);
 
   const { error: uploadError } = await supabase.storage
     .from("notes")
     .upload(filePath, pdfCheck.buffer, {
       contentType: "application/pdf",
       upsert: false,
+      cacheControl: PDF_STORAGE_CACHE_CONTROL,
     });
 
   if (uploadError) {
@@ -93,7 +94,7 @@ export async function uploadNote(formData: FormData) {
       faculty,
       file_path: filePath,
       file_name: file.name,
-      pdf_text: pdfText,
+      pdf_text: "",
     })
     .select("id")
     .single();
@@ -108,14 +109,21 @@ export async function uploadNote(formData: FormData) {
     version_number: 1,
     file_path: filePath,
     file_name: file.name,
-    pdf_text: pdfText,
+    pdf_text: "",
     created_by: user.id,
   });
 
   await syncNoteTags(supabase, noteId, tagNames);
 
+  schedulePdfTextExtraction({
+    noteId,
+    filePath,
+    versionNumber: 1,
+  });
+
   revalidatePath("/");
   revalidatePath("/cerca");
   revalidatePath("/profilo");
+  revalidateTag("recent-notes", "max");
   redirect(`/appunti/${note.id}?uploaded=1`);
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type PdfPreviewProps = {
   fileUrl: string;
@@ -8,10 +8,30 @@ type PdfPreviewProps = {
 };
 
 export function PdfPreview({ fileUrl, title }: PdfPreviewProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
   const [embedFailed, setEmbedFailed] = useState(false);
 
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px 0px", threshold: 0.01 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="space-y-3">
+    <div ref={containerRef} className="space-y-3">
       <div className="flex flex-wrap gap-2">
         <a
           href={fileUrl}
@@ -32,7 +52,11 @@ export function PdfPreview({ fileUrl, title }: PdfPreviewProps) {
       <p className="text-xs text-muted">
         Su iPhone e alcuni browser l&apos;anteprima integrata non funziona: usa i pulsanti sopra.
       </p>
-      {!embedFailed ? (
+      {!shouldLoad ? (
+        <div className="card flex h-[min(70vh,600px)] min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-sage/25 bg-mint-light/20 text-sm text-muted">
+          Scorri qui per caricare l&apos;anteprima…
+        </div>
+      ) : !embedFailed ? (
         <div className="card overflow-hidden rounded-2xl shadow-[var(--shadow-card)]">
           <object
             data={fileUrl}

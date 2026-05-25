@@ -1,7 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function hasSupabaseSessionCookie(request: NextRequest): boolean {
+  return request.cookies.getAll().some((c) => c.name.includes("-auth-token"));
+}
+
 export async function updateSession(request: NextRequest) {
+  if (!hasSupabaseSessionCookie(request)) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

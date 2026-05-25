@@ -105,7 +105,11 @@ export const REPORT_REASONS = [
 ] as const;
 
 export const SITE_NAME = "Stufy";
-export const LOGO_VERSION = "2";
+export const LOGO_VERSION = "3";
+/** Logo header (AVIF leggero in /public). */
+export const LOGO_SRC = `/logo1.avif?v=${LOGO_VERSION}`;
+/** Favicon / icona app. */
+export const FAVICON_SRC = `/logo-icon.png?v=${LOGO_VERSION}`;
 
 /** Tag suggeriti quando il DB non ne ha ancora abbastanza. */
 export const SUGGESTED_TAGS = [

@@ -1,32 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { SearchBar } from "@/components/SearchBar";
-import { NoteCard } from "@/components/NoteCard";
+import { HomeRecentNotes } from "@/components/HomeRecentNotes";
 import { POPULAR_UNIVERSITIES } from "@/lib/constants";
-import { createClient } from "@/lib/supabase/server";
-import { attachListStats } from "@/lib/notes";
-import { filterByBlocked, getBlockedUserIds } from "@/lib/blocks";
-import type { NoteWithAuthor } from "@/types/database";
 
-export default async function HomePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export const revalidate = 60;
 
-  const { data: recentNotes } = await supabase
-    .from("notes")
-    .select("*, profiles(username, full_name, avatar_url)")
-    .order("created_at", { ascending: false })
-    .limit(6);
-
-  const blocked = user ? await getBlockedUserIds(supabase, user.id) : new Set<string>();
-  const filteredNotes = filterByBlocked(
-    (recentNotes ?? []) as NoteWithAuthor[],
-    blocked,
-  );
-
-  const notesWithStats = await attachListStats(supabase, filteredNotes, user?.id);
-
+export default function HomePage() {
   return (
     <div>
       <section className="border-b border-gray-light bg-gradient-to-b from-mint-light/50 to-surface shadow-[var(--shadow-soft)]">
@@ -68,16 +48,24 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {notesWithStats.length > 0 && (
-        <section className="mx-auto max-w-5xl px-4 pb-16">
-          <h2 className="text-lg font-semibold text-foreground">Appunti recenti</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {notesWithStats.map(({ note, stats }) => (
-              <NoteCard key={note.id} note={note} likeCount={stats.likeCount} />
-            ))}
-          </div>
-        </section>
-      )}
+      <Suspense
+        fallback={
+          <section className="mx-auto max-w-5xl px-4 pb-16">
+            <h2 className="text-lg font-semibold text-foreground">Appunti recenti</h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="card h-40 animate-pulse rounded-2xl bg-mint-light/30"
+                  aria-hidden
+                />
+              ))}
+            </div>
+          </section>
+        }
+      >
+        <HomeRecentNotes />
+      </Suspense>
     </div>
   );
 }

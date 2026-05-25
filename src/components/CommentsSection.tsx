@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCachedUser } from "@/lib/auth";
 import { getNoteComments, formatCommentDate } from "@/lib/notes";
 import { CommentForm } from "@/components/CommentForm";
 import { DeleteCommentButton } from "@/components/DeleteCommentButton";
@@ -12,11 +13,10 @@ type CommentsSectionProps = {
 
 export async function CommentsSection({ noteId, returnTo }: CommentsSectionProps) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const comments = await getNoteComments(supabase, noteId);
+  const [user, comments] = await Promise.all([
+    getCachedUser(),
+    getNoteComments(supabase, noteId),
+  ]);
 
   return (
     <section className="mt-10 border-t border-gray-light pt-8">

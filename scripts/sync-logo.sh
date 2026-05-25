@@ -2,13 +2,17 @@
 set -e
 cd "$(dirname "$0")/.."
 
-SRC="images/logo1.png"
-if [ ! -f "$SRC" ]; then
-  echo "Manca $SRC"
-  exit 1
+AVIF_SRC="images/logo1.avif"
+PNG_SRC="images/logo1.png"
+
+if [ -f "$AVIF_SRC" ]; then
+  cp -f "$AVIF_SRC" public/logo1.avif
+  echo "Logo AVIF → public/logo1.avif"
 fi
 
-cp -f "$SRC" public/logo1.png
-python3 scripts/crop-logo.py
+if [ -f "$PNG_SRC" ]; then
+  cp -f "$PNG_SRC" public/logo1.png
+  python3 scripts/crop-logo.py 2>/dev/null || true
+fi
 
-echo "Logo aggiornato. Incrementa LOGO_VERSION se il browser mostra ancora il vecchio file."
+echo "Fatto. Incrementa LOGO_VERSION in src/lib/constants.ts se il browser mostra ancora il vecchio file."

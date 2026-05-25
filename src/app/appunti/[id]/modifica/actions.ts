@@ -4,8 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { findDuplicateNotes } from "@/lib/duplicates";
-import { extractPdfText } from "@/lib/pdf-extract";
 import { validatePdfFileContent } from "@/lib/pdf-validation";
+import { schedulePdfTextExtraction } from "@/lib/pdf-text-job";
+import { PDF_STORAGE_CACHE_CONTROL } from "@/lib/storage";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { syncNoteTags, validateTagsInput } from "@/lib/tags";
 
@@ -73,7 +74,7 @@ export async function updateNote(noteId: string, formData: FormData) {
       redirect(`/appunti/${noteId}/modifica?error=${encodeURIComponent(pdfCheck.error)}`);
     }
 
-    pdfText = await extractPdfText(pdfCheck.buffer);
+    pdfText = "";
 
     const currentVersion = existing.version_number ?? 1;
 
@@ -96,6 +97,7 @@ export async function updateNote(noteId: string, formData: FormData) {
       .upload(newPath, pdfCheck.buffer, {
         contentType: "application/pdf",
         upsert: false,
+        cacheControl: PDF_STORAGE_CACHE_CONTROL,
       });
 
     if (uploadError) {
@@ -107,7 +109,7 @@ export async function updateNote(noteId: string, formData: FormData) {
       version_number: nextVersion,
       file_path: newPath,
       file_name: file.name,
-      pdf_text: pdfText,
+      pdf_text: "",
       created_by: user.id,
     });
 
@@ -118,6 +120,12 @@ export async function updateNote(noteId: string, formData: FormData) {
       .from("notes")
       .update({ version_number: nextVersion })
       .eq("id", noteId);
+
+    schedulePdfTextExtraction({
+      noteId,
+      filePath: newPath,
+      versionNumber: nextVersion,
+    });
   }
 
   const { error } = await supabase

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { NoteCard } from "@/components/NoteCard";
 import { attachListStats } from "@/lib/notes";
+import { NOTE_LIST_COLUMNS } from "@/lib/note-columns";
 import type { NoteWithAuthor } from "@/types/database";
 
 export const metadata = { title: "Salvati" };
@@ -17,7 +18,7 @@ export default async function SalvatiPage() {
 
   const { data: favorites } = await supabase
     .from("note_favorites")
-    .select("note_id, notes(*, profiles(username, full_name, avatar_url))")
+    .select(`note_id, notes(${NOTE_LIST_COLUMNS})`)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 

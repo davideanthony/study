@@ -13,13 +13,13 @@ describe("pdf-validation", () => {
   });
 
   it("rifiuta file troppo grande", () => {
-    const big = new File([new Uint8Array(101 * 1024 * 1024)], "big.pdf", {
+    const big = new File([new Uint8Array(21 * 1024 * 1024)], "big.pdf", {
       type: "application/pdf",
     });
     const result = validatePdfFile(big);
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain("100 MB");
+      expect(result.error).toContain("20 MB");
     }
   });
 });

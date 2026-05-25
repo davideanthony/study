@@ -1,26 +1,13 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/Logo";
 import { MobileNavDrawer } from "@/components/MobileNavDrawer";
-import { NotificationsBell } from "@/components/NotificationsBell";
+import { NotificationsBellClient } from "@/components/NotificationsBellClient";
+import { getAuthContext } from "@/lib/auth";
 
 export async function Header() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let username: string | null = null;
-  let isAdmin = false;
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username, is_admin")
-      .eq("id", user.id)
-      .single();
-    username = profile?.username ?? null;
-    isAdmin = !!profile?.is_admin;
-  }
+  const { user, profile, unreadNotifications } = await getAuthContext();
+  const username = profile?.username ?? null;
+  const isAdmin = profile?.is_admin ?? false;
 
   return (
     <header className="overflow-visible border-b border-gray-light bg-surface/85 shadow-[var(--shadow-soft)] backdrop-blur-sm">
@@ -42,7 +29,10 @@ export async function Header() {
                 <Link href="/messaggi" className="text-muted transition hover:text-sage">
                   Messaggi
                 </Link>
-                <NotificationsBell />
+                <NotificationsBellClient
+                  userId={user.id}
+                  initialUnread={unreadNotifications}
+                />
                 <Link
                   href="/profilo"
                   title={username ?? "Profilo"}
@@ -69,7 +59,12 @@ export async function Header() {
           </nav>
 
           <div className="flex items-center gap-1.5 sm:hidden">
-            {user && <NotificationsBell />}
+            {user && (
+              <NotificationsBellClient
+                userId={user.id}
+                initialUnread={unreadNotifications}
+              />
+            )}
             <MobileNavDrawer isLoggedIn={!!user} username={username} isAdmin={isAdmin} />
           </div>
         </div>

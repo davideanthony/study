@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { SITE_NAME } from "@/lib/constants";
 
+export const revalidate = 86400;
+
 export const metadata = {
   title: "Termini di servizio",
   description: `Termini di utilizzo di ${SITE_NAME}.`,

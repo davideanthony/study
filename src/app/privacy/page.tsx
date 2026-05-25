@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { SITE_NAME } from "@/lib/constants";
 
+export const revalidate = 86400;
+
 export const metadata = {
   title: "Privacy",
   description: `Informativa privacy di ${SITE_NAME}.`,

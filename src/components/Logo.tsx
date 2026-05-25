@@ -1,10 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { SITE_NAME, LOGO_VERSION } from "@/lib/constants";
+import { SITE_NAME, LOGO_SRC } from "@/lib/constants";
 
 export function Logo() {
-  const src = `/logo1.png?v=${LOGO_VERSION}`;
-
   return (
     <Link
       href="/"
@@ -12,11 +10,10 @@ export function Logo() {
       aria-label={SITE_NAME}
     >
       <Image
-        src={src}
+        src={LOGO_SRC}
         alt=""
         width={352}
         height={80}
-        unoptimized
         className="h-[4rem] w-auto max-w-[min(14rem,54vw)] object-contain object-left sm:h-[4.25rem] sm:max-w-[15.5rem]"
         priority
       />

@@ -1,11 +1,11 @@
 /** Limite upload PDF (byte). */
-export const MAX_PDF_BYTES = 100 * 1024 * 1024;
+export const MAX_PDF_BYTES = 20 * 1024 * 1024;
 
 /** Caratteri massimi salvati per ricerca full-text. */
 export const MAX_PDF_TEXT_CHARS = 2_000_000;
 
 export function formatMaxPdfSize(): string {
-  return "100 MB";
+  return "20 MB";
 }
 
 /** Verifica magic bytes PDF (%PDF). */

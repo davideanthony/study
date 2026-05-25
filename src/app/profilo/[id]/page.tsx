@@ -7,6 +7,7 @@ import { BlockButton } from "@/components/BlockButton";
 import { MessageUserButton } from "@/components/MessageUserButton";
 import { isBlockedBetween } from "@/lib/blocks";
 import { attachListStats } from "@/lib/notes";
+import { NOTE_LIST_COLUMNS, asNotesWithAuthor } from "@/lib/note-columns";
 import { buildCercaUrl } from "@/lib/search-params";
 import type { NoteWithAuthor } from "@/types/database";
 
@@ -67,11 +68,11 @@ export default async function ProfiloPubblicoPage({ params }: PageProps) {
 
   const { data: notes } = await supabase
     .from("notes")
-    .select("*, profiles(username, full_name, avatar_url)")
+    .select(NOTE_LIST_COLUMNS)
     .eq("user_id", id)
     .order("created_at", { ascending: false });
 
-  const typedNotes = (notes ?? []) as NoteWithAuthor[];
+  const typedNotes = asNotesWithAuthor(notes);
   const totalDownloads = typedNotes.reduce((sum, n) => sum + n.download_count, 0);
   const notesWithStats = await attachListStats(supabase, typedNotes, user?.id);
 
