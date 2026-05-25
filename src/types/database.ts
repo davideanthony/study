@@ -18,6 +18,7 @@ export type Note = {
   description: string;
   file_path: string;
   file_name: string;
+  thumbnail_path?: string | null;
   download_count: number;
   like_count: number;
   academic_year: string;

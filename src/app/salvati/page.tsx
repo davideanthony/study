@@ -1,20 +1,16 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { requireCachedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { NoteCard } from "@/components/NoteCard";
-import { attachListStats } from "@/lib/notes";
+import { attachListStats, getPublicThumbnailUrl } from "@/lib/notes";
 import { NOTE_LIST_COLUMNS } from "@/lib/note-columns";
 import type { NoteWithAuthor } from "@/types/database";
 
 export const metadata = { title: "Salvati" };
 
 export default async function SalvatiPage() {
+  const user = await requireCachedUser("/salvati");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/auth/login?next=/salvati");
 
   const { data: favorites } = await supabase
     .from("note_favorites")
@@ -46,7 +42,12 @@ export default async function SalvatiPage() {
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {notesWithStats.map(({ note, stats }) => (
-            <NoteCard key={note.id} note={note} likeCount={stats.likeCount} />
+            <NoteCard
+              key={note.id}
+              note={note}
+              likeCount={stats.likeCount}
+              thumbnailUrl={getPublicThumbnailUrl(supabase, note.thumbnail_path)}
+            />
           ))}
         </div>
       )}

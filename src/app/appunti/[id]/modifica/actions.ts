@@ -3,18 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCachedUser } from "@/lib/auth";
 import { findDuplicateNotes } from "@/lib/duplicates";
 import { validatePdfFileContent } from "@/lib/pdf-validation";
-import { schedulePdfTextExtraction } from "@/lib/pdf-text-job";
+import { schedulePdfPostUpload } from "@/lib/pdf-text-job";
 import { PDF_STORAGE_CACHE_CONTROL } from "@/lib/storage";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { syncNoteTags, validateTagsInput } from "@/lib/tags";
 
 export async function updateNote(noteId: string, formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
 
   if (!user) redirect(`/auth/login?next=/appunti/${noteId}/modifica`);
 
@@ -121,8 +120,9 @@ export async function updateNote(noteId: string, formData: FormData) {
       .update({ version_number: nextVersion })
       .eq("id", noteId);
 
-    schedulePdfTextExtraction({
+    schedulePdfPostUpload({
       noteId,
+      userId: user.id,
       filePath: newPath,
       versionNumber: nextVersion,
     });
@@ -141,6 +141,7 @@ export async function updateNote(noteId: string, formData: FormData) {
       file_path: filePath,
       file_name: fileName,
       pdf_text: pdfText,
+      ...(file && file.size > 0 ? { thumbnail_path: null } : {}),
     })
     .eq("id", noteId);
 

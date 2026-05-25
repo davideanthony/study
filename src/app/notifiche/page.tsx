@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { requireCachedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   markAllNotificationsRead,
@@ -11,12 +11,8 @@ import type { Notification } from "@/types/database";
 export const metadata = { title: "Notifiche" };
 
 export default async function NotifichePage() {
+  const user = await requireCachedUser("/notifiche");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/auth/login?next=/notifiche");
 
   const { data: notifications } = await supabase
     .from("notifications")

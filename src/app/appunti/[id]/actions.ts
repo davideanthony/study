@@ -3,14 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCachedUser } from "@/lib/auth";
 import { isBlockedBetween } from "@/lib/blocks";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 async function requireUser() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) redirect("/auth/login");
   return { supabase, user };
 }
@@ -97,13 +96,16 @@ export async function deleteComment(commentId: string, noteId: string) {
 }
 
 /** Incrementa download solo per utenti loggati (dedupe 24h lato DB). */
-export async function recordDownload(noteId: string): Promise<boolean> {
+export async function recordDownload(
+  noteId: string,
+): Promise<{ ok: true; counted: boolean } | { ok: false; rateLimited: true }> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
 
-  if (!user) return false;
+  if (!user) return { ok: true, counted: false };
+
+  const limit = await checkRateLimit(supabase, user.id, "download");
+  if (!limit.allowed) return { ok: false, rateLimited: true };
 
   const { data: counted } = await supabase.rpc("increment_note_download", {
     p_note_id: noteId,
@@ -116,5 +118,5 @@ export async function recordDownload(noteId: string): Promise<boolean> {
     revalidatePath("/");
   }
 
-  return !!counted;
+  return { ok: true, counted: !!counted };
 }

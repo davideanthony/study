@@ -3,15 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCachedUser } from "@/lib/auth";
 import { isBlockedBetween } from "@/lib/blocks";
 import { dmParticipants } from "@/lib/dm";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 async function requireUser() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) redirect("/auth/login?next=/messaggi");
   return { supabase, user };
 }

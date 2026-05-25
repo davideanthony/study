@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { requireCachedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { updateNoteForm } from "./actions";
 import { ACADEMIC_YEARS, ALL_UNIVERSITIES, SEMESTERS } from "@/lib/constants";
@@ -18,11 +19,7 @@ export default async function ModificaAppuntoPage({ params, searchParams }: Page
   const { id } = await params;
   const { error, duplicate } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect(`/auth/login?next=/appunti/${id}/modifica`);
+  const user = await requireCachedUser(`/appunti/${id}/modifica`);
 
   const { data: note } = await supabase
     .from("notes")

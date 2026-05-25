@@ -1,12 +1,15 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { NoteCard } from "@/components/NoteCard";
 import { Pagination } from "@/components/Pagination";
 import { createClient } from "@/lib/supabase/server";
-import { attachListStats } from "@/lib/notes";
+import { attachListStats, getPublicThumbnailUrl } from "@/lib/notes";
 import { searchNotes } from "@/lib/search-notes";
 import { getBlockedUserIds } from "@/lib/blocks";
 import { getNoteIdsByTag } from "@/lib/tags";
 import { getCachedUser } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getClientIpFromHeaders, rateLimitActorId } from "@/lib/rate-limit-actor";
 import {
   NOTES_PER_PAGE,
   parsePage,
@@ -53,6 +56,17 @@ export async function CercaResults({ searchParams: sp }: CercaResultsProps) {
 
   const supabase = await createClient();
   const user = await getCachedUser();
+  const headerList = await headers();
+  const actorId = rateLimitActorId(user?.id, getClientIpFromHeaders(headerList));
+  const searchLimit = await checkRateLimit(supabase, actorId, "search");
+
+  if (!searchLimit.allowed) {
+    return (
+      <div className="mt-12 rounded-2xl border border-amber-200/80 bg-amber-50/80 p-8 text-center shadow-[var(--shadow-soft)]">
+        <p className="text-sm text-amber-900">{searchLimit.message}</p>
+      </div>
+    );
+  }
 
   const blocked = user ? await getBlockedUserIds(supabase, user.id) : new Set<string>();
   const excludeUserIds = [...blocked];
@@ -107,7 +121,12 @@ export async function CercaResults({ searchParams: sp }: CercaResultsProps) {
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {notesWithStats.map(({ note, stats }) => (
-            <NoteCard key={note.id} note={note} likeCount={stats.likeCount} />
+            <NoteCard
+              key={note.id}
+              note={note}
+              likeCount={stats.likeCount}
+              thumbnailUrl={getPublicThumbnailUrl(supabase, note.thumbnail_path)}
+            />
           ))}
         </div>
       )}

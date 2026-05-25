@@ -1,20 +1,27 @@
 import { after } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { extractPdfText } from "@/lib/pdf-extract";
+import {
+  noteThumbnailStoragePath,
+  renderPdfFirstPageThumbnail,
+} from "@/lib/pdf-thumbnail";
 import { createServiceClient, hasServiceRole } from "@/lib/supabase/service";
 import { createClient } from "@/lib/supabase/server";
+import { PDF_STORAGE_CACHE_CONTROL } from "@/lib/storage";
 
-type PdfTextJobOptions = {
+type PdfPostUploadJobOptions = {
   noteId: string;
+  userId: string;
   filePath: string;
   versionNumber?: number;
 };
 
-async function runPdfTextExtraction({
+async function runPdfPostUploadJob({
   noteId,
+  userId,
   filePath,
   versionNumber,
-}: PdfTextJobOptions): Promise<void> {
+}: PdfPostUploadJobOptions): Promise<void> {
   const supabase = hasServiceRole()
     ? createServiceClient()
     : await createClient();
@@ -24,19 +31,44 @@ async function runPdfTextExtraction({
     .download(filePath);
 
   if (dlError || !file) {
-    console.error("[pdf-text-job] download", noteId, dlError?.message);
+    console.error("[pdf-post-upload] download", noteId, dlError?.message);
     return;
   }
 
-  const pdfText = await extractPdfText(await file.arrayBuffer());
+  const buffer = await file.arrayBuffer();
+  const [pdfText, thumbBuffer] = await Promise.all([
+    extractPdfText(buffer),
+    renderPdfFirstPageThumbnail(buffer),
+  ]);
+
+  const updates: { pdf_text: string; thumbnail_path?: string } = {
+    pdf_text: pdfText,
+  };
+
+  if (thumbBuffer) {
+    const thumbPath = noteThumbnailStoragePath(userId, noteId);
+    const { error: thumbUpError } = await supabase.storage
+      .from("notes")
+      .upload(thumbPath, thumbBuffer, {
+        contentType: "image/jpeg",
+        upsert: true,
+        cacheControl: PDF_STORAGE_CACHE_CONTROL,
+      });
+
+    if (!thumbUpError) {
+      updates.thumbnail_path = thumbPath;
+    } else {
+      console.error("[pdf-post-upload] thumb upload", noteId, thumbUpError.message);
+    }
+  }
 
   const { error: upError } = await supabase
     .from("notes")
-    .update({ pdf_text: pdfText })
+    .update(updates)
     .eq("id", noteId);
 
   if (upError) {
-    console.error("[pdf-text-job] update note", noteId, upError.message);
+    console.error("[pdf-post-upload] update note", noteId, upError.message);
     return;
   }
 
@@ -52,9 +84,26 @@ async function runPdfTextExtraction({
   revalidatePath("/cerca");
   revalidatePath("/");
   revalidateTag("recent-notes", "max");
+  revalidateTag("sitemap-notes", "max");
 }
 
-/** Estrazione full-text PDF dopo la risposta HTTP (non blocca l'upload). */
-export function schedulePdfTextExtraction(options: PdfTextJobOptions): void {
-  after(() => runPdfTextExtraction(options));
+/** Testo full-text + thumbnail dopo la risposta HTTP. */
+export function schedulePdfPostUpload(options: PdfPostUploadJobOptions): void {
+  after(() => runPdfPostUploadJob(options));
+}
+
+/** @deprecated Usa schedulePdfPostUpload */
+export function schedulePdfTextExtraction(
+  options: Omit<PdfPostUploadJobOptions, "userId"> & { userId?: string },
+): void {
+  if (!options.userId) {
+    console.error("[schedulePdfTextExtraction] userId richiesto");
+    return;
+  }
+  schedulePdfPostUpload({
+    noteId: options.noteId,
+    userId: options.userId,
+    filePath: options.filePath,
+    versionNumber: options.versionNumber,
+  });
 }

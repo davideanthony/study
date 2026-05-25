@@ -1,10 +1,10 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { requireCachedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { NoteCard } from "@/components/NoteCard";
 import { DeleteNoteButton } from "@/components/DeleteNoteButton";
 import { signOut } from "@/app/auth/actions";
-import { attachListStats } from "@/lib/notes";
+import { attachListStats, getPublicThumbnailUrl } from "@/lib/notes";
 import { NOTE_LIST_COLUMNS, asNotesWithAuthor } from "@/lib/note-columns";
 import type { NoteWithAuthor } from "@/types/database";
 import { PlausibleConversion } from "@/components/PlausibleConversion";
@@ -17,12 +17,8 @@ type PageProps = {
 
 export default async function ProfiloPage({ searchParams }: PageProps) {
   const { registered } = await searchParams;
+  const user = await requireCachedUser("/profilo");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/auth/login?next=/profilo");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -103,7 +99,11 @@ export default async function ProfiloPage({ searchParams }: PageProps) {
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {notesWithStats.map(({ note, stats }) => (
             <div key={note.id} className="flex flex-col gap-2">
-              <NoteCard note={note} likeCount={stats.likeCount} />
+              <NoteCard
+                note={note}
+                likeCount={stats.likeCount}
+                thumbnailUrl={getPublicThumbnailUrl(supabase, note.thumbnail_path)}
+              />
               <DeleteNoteButton
                 noteId={note.id}
                 noteTitle={note.title}

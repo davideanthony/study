@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { User } from "@supabase/supabase-js";
 
@@ -51,3 +52,16 @@ export const getCachedUser = cache(async () => {
   const { user } = await getAuthContext();
   return user;
 });
+
+/** Utente obbligatorio (redirect login). */
+export async function requireCachedUser(nextPath?: string): Promise<User> {
+  const user = await getCachedUser();
+  if (!user) {
+    redirect(
+      nextPath
+        ? `/auth/login?next=${encodeURIComponent(nextPath)}`
+        : "/auth/login",
+    );
+  }
+  return user;
+}

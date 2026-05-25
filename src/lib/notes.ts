@@ -78,6 +78,14 @@ export function getPublicFileUrl(
   return data.publicUrl;
 }
 
+export function getPublicThumbnailUrl(
+  supabase: SupabaseClient,
+  thumbnailPath: string | null | undefined,
+): string | null {
+  if (!thumbnailPath?.trim()) return null;
+  return getPublicFileUrl(supabase, thumbnailPath);
+}
+
 export function formatCommentDate(iso: string): string {
   const date = new Date(iso);
   const now = new Date();

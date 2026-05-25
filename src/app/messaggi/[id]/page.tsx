@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { requireCachedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { isBlockedBetween } from "@/lib/blocks";
 import { otherParticipant } from "@/lib/dm";
@@ -15,12 +16,8 @@ export const metadata = { title: "Conversazione" };
 export default async function MessaggioThreadPage({ params, searchParams }: PageProps) {
   const { id } = await params;
   const { error } = await searchParams;
+  const user = await requireCachedUser(`/messaggi/${id}`);
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect(`/auth/login?next=/messaggi/${id}`);
 
   const { data: conv } = await supabase
     .from("dm_conversations")

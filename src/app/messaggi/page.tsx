@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { requireCachedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { otherParticipant } from "@/lib/dm";
 import { formatCommentDate } from "@/lib/notes";
@@ -12,12 +12,8 @@ type PageProps = {
 
 export default async function MessaggiPage({ searchParams }: PageProps) {
   const { error } = await searchParams;
+  const user = await requireCachedUser("/messaggi");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/auth/login?next=/messaggi");
 
   const { data: conversations } = await supabase
     .from("dm_conversations")

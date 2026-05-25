@@ -1,7 +1,7 @@
 import { NoteCard } from "@/components/NoteCard";
 import { createClient } from "@/lib/supabase/server";
 import { getCachedRecentNotes } from "@/lib/cached-queries";
-import { attachListStats } from "@/lib/notes";
+import { attachListStats, getPublicThumbnailUrl } from "@/lib/notes";
 import { filterByBlocked, getBlockedUserIds } from "@/lib/blocks";
 import { getCachedUser } from "@/lib/auth";
 import { NOTE_LIST_COLUMNS, asNotesWithAuthor } from "@/lib/note-columns";
@@ -35,7 +35,12 @@ export async function HomeRecentNotes() {
       <h2 className="text-lg font-semibold text-foreground">Appunti recenti</h2>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {notesWithStats.map(({ note, stats }) => (
-          <NoteCard key={note.id} note={note} likeCount={stats.likeCount} />
+          <NoteCard
+            key={note.id}
+            note={note}
+            likeCount={stats.likeCount}
+            thumbnailUrl={getPublicThumbnailUrl(supabase, note.thumbnail_path)}
+          />
         ))}
       </div>
     </section>

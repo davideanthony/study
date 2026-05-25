@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCachedUser } from "@/lib/auth";
 import { NOTE_LIST_COLUMNS, asNoteWithAuthor } from "@/lib/note-columns";
-import { getNoteStats, getPublicFileUrl } from "@/lib/notes";
+import { getNoteStats, getPublicFileUrl, getPublicThumbnailUrl } from "@/lib/notes";
 import { buildCercaUrl } from "@/lib/search-params";
 import { LikeButton } from "@/components/LikeButton";
 import { DownloadButton } from "@/components/DownloadButton";
@@ -58,6 +58,7 @@ export default async function AppuntoPage({ params, searchParams }: PageProps) {
   const versionNumber = typedNote.version_number ?? 1;
   const stats = await getNoteStats(supabase, id, user?.id);
   const fileUrl = getPublicFileUrl(supabase, typedNote.file_path);
+  const thumbnailUrl = getPublicThumbnailUrl(supabase, typedNote.thumbnail_path);
   const author =
     typedNote.profiles?.full_name || typedNote.profiles?.username || "Studente";
   const authorUsername = typedNote.profiles?.username;
@@ -198,7 +199,11 @@ export default async function AppuntoPage({ params, searchParams }: PageProps) {
       <div className="mt-8">
         <h2 className="text-sm font-medium text-muted">Anteprima PDF</h2>
         <div className="mt-2">
-          <PdfPreview fileUrl={fileUrl} title={typedNote.title} />
+          <PdfPreview
+            fileUrl={fileUrl}
+            title={typedNote.title}
+            thumbnailUrl={thumbnailUrl}
+          />
         </div>
       </div>
 

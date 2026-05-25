@@ -3,18 +3,17 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCachedUser } from "@/lib/auth";
 import { findDuplicateNotes } from "@/lib/duplicates";
 import { validatePdfFileContent } from "@/lib/pdf-validation";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { parseTagInput, syncNoteTags, validateTagsInput } from "@/lib/tags";
-import { schedulePdfTextExtraction } from "@/lib/pdf-text-job";
+import { schedulePdfPostUpload } from "@/lib/pdf-text-job";
 import { PDF_STORAGE_CACHE_CONTROL } from "@/lib/storage";
 
 export async function uploadNote(formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
 
   if (!user) {
     redirect("/auth/login?next=/carica");
@@ -115,8 +114,9 @@ export async function uploadNote(formData: FormData) {
 
   await syncNoteTags(supabase, noteId, tagNames);
 
-  schedulePdfTextExtraction({
+  schedulePdfPostUpload({
     noteId,
+    userId: user.id,
     filePath,
     versionNumber: 1,
   });
@@ -125,5 +125,6 @@ export async function uploadNote(formData: FormData) {
   revalidatePath("/cerca");
   revalidatePath("/profilo");
   revalidateTag("recent-notes", "max");
+  revalidateTag("sitemap-notes", "max");
   redirect(`/appunti/${note.id}?uploaded=1`);
 }

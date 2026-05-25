@@ -13,6 +13,9 @@
 | Liste appunti | Query senza `pdf_text` (`NOTE_LIST_COLUMNS`) |
 | Home anonimi | `unstable_cache` appunti recenti, revalidate 60s |
 | Streaming | `Suspense` su home, cerca, commenti appunto |
+| Sitemap | Cache 1h (`unstable_cache`) |
+| Thumbnail PDF | Prima pagina JPEG in background, card + anteprima lazy |
+| Rate limit | Ricerche (90/min) e download (50/h) |
 
 ## Database — cosa devi fare tu
 

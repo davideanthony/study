@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getCachedSitemapNotes } from "@/lib/cached-queries";
 import { getSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -12,14 +12,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const supabase = await createClient();
-    const { data: notes } = await supabase
-      .from("notes")
-      .select("id, created_at")
-      .order("created_at", { ascending: false })
-      .limit(500);
-
-    const noteRoutes: MetadataRoute.Sitemap = (notes ?? []).map((n) => ({
+    const notes = await getCachedSitemapNotes();
+    const noteRoutes: MetadataRoute.Sitemap = notes.map((n) => ({
       url: `${base}/appunti/${n.id}`,
       lastModified: n.created_at,
       changeFrequency: "weekly",

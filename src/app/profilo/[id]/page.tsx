@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getCachedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { NoteCard } from "@/components/NoteCard";
 import { FollowButton } from "@/components/FollowButton";
 import { BlockButton } from "@/components/BlockButton";
 import { MessageUserButton } from "@/components/MessageUserButton";
 import { isBlockedBetween } from "@/lib/blocks";
-import { attachListStats } from "@/lib/notes";
+import { attachListStats, getPublicThumbnailUrl } from "@/lib/notes";
 import { NOTE_LIST_COLUMNS, asNotesWithAuthor } from "@/lib/note-columns";
 import { buildCercaUrl } from "@/lib/search-params";
 import type { NoteWithAuthor } from "@/types/database";
@@ -18,9 +19,7 @@ type PageProps = {
 export default async function ProfiloPubblicoPage({ params }: PageProps) {
   const { id } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -145,7 +144,12 @@ export default async function ProfiloPubblicoPage({ params }: PageProps) {
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {notesWithStats.map(({ note, stats }) => (
-            <NoteCard key={note.id} note={note} likeCount={stats.likeCount} />
+            <NoteCard
+              key={note.id}
+              note={note}
+              likeCount={stats.likeCount}
+              thumbnailUrl={getPublicThumbnailUrl(supabase, note.thumbnail_path)}
+            />
           ))}
         </div>
       )}

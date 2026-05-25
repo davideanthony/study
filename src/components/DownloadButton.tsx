@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { recordDownload } from "@/app/appunti/[id]/actions";
 import { trackPlausibleEvent } from "@/lib/plausible";
@@ -19,6 +19,7 @@ export function DownloadButton({
   isLoggedIn,
 }: DownloadButtonProps) {
   const [pending, startTransition] = useTransition();
+  const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
 
   function triggerDownload() {
     const link = document.createElement("a");
@@ -32,9 +33,16 @@ export function DownloadButton({
   }
 
   function handleDownload() {
+    setRateLimitMessage(null);
     startTransition(async () => {
       if (isLoggedIn) {
-        await recordDownload(noteId);
+        const result = await recordDownload(noteId);
+        if (!result.ok) {
+          setRateLimitMessage(
+            "Hai raggiunto il limite di download per ora. Riprova più tardi.",
+          );
+          return;
+        }
       }
       trackPlausibleEvent("note_download");
       triggerDownload();
@@ -67,13 +75,18 @@ export function DownloadButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleDownload}
-      disabled={pending}
-      className="btn-accent inline-flex items-center gap-2 px-5 py-2.5 text-sm disabled:opacity-60"
-    >
-      {pending ? "Download…" : "Scarica PDF"}
-    </button>
+    <div className="flex flex-col gap-1">
+      <button
+        type="button"
+        onClick={handleDownload}
+        disabled={pending}
+        className="btn-accent inline-flex items-center gap-2 px-5 py-2.5 text-sm disabled:opacity-60"
+      >
+        {pending ? "Download…" : "Scarica PDF"}
+      </button>
+      {rateLimitMessage ? (
+        <p className="text-xs text-amber-800">{rateLimitMessage}</p>
+      ) : null}
+    </div>
   );
 }

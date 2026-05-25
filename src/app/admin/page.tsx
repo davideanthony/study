@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { requireCachedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import { updateReportStatus, deleteReportedNoteForm } from "./actions";
@@ -9,12 +10,9 @@ import { hasServiceRole } from "@/lib/supabase/service";
 export const metadata = { title: "Admin" };
 
 export default async function AdminPage() {
+  const user = await requireCachedUser("/admin");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login?next=/admin");
   if (!(await isAdmin(supabase, user.id))) redirect("/");
 
   const { data: reports } = await supabase

@@ -3,15 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCachedUser } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin";
 import { reindexNotesPdfText, type ReindexResult } from "@/lib/reindex-notes";
 import { createServiceClient, hasServiceRole } from "@/lib/supabase/service";
 
 async function requireAdmin() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) redirect("/auth/login?next=/admin");
   const admin = await isAdmin(supabase, user.id);
   if (!admin) redirect("/");

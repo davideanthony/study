@@ -23,7 +23,7 @@ Piattaforma web per condividere appunti universitari.
 ### 1. Supabase
 
 1. Crea un progetto su [supabase.com](https://supabase.com)
-2. In **SQL Editor**, esegui in ordine tutte le migration in `supabase/migrations/` (001 → **010**)
+2. In **SQL Editor**, esegui in ordine tutte le migration in `supabase/migrations/` (001 → **011**)
 3. In **Authentication → URL Configuration**:
    - Site URL: `http://localhost:3000`
    - Redirect URLs: `http://localhost:3000/auth/callback`

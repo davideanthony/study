@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { requireCachedUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { changePassword } from "@/app/auth/actions";
 import { updateProfile } from "../actions";
@@ -14,12 +15,8 @@ export const metadata = { title: "Modifica profilo" };
 
 export default async function ModificaProfiloPage({ searchParams }: PageProps) {
   const { error, password_ok } = await searchParams;
+  const user = await requireCachedUser("/profilo/modifica");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/auth/login?next=/profilo/modifica");
 
   const { data: profile } = await supabase
     .from("profiles")

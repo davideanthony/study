@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { requireCachedUser } from "@/lib/auth";
 import { uploadNote } from "./actions";
 import { ACADEMIC_YEARS, ALL_UNIVERSITIES, SEMESTERS } from "@/lib/constants";
 import { formatMaxPdfSize } from "@/lib/pdf-validation";
@@ -21,14 +21,8 @@ export const metadata = { title: "Carica appunti" };
 
 export default async function CaricaPage({ searchParams }: PageProps) {
   const sp = await searchParams;
+  const user = await requireCachedUser("/carica");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/auth/login?next=/carica");
-  }
 
   const { data: profile } = await supabase
     .from("profiles")

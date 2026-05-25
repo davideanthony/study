@@ -6,7 +6,9 @@ export type RateLimitAction =
   | "report"
   | "like"
   | "message"
-  | "follow";
+  | "follow"
+  | "search"
+  | "download";
 
 const LIMITS: Record<RateLimitAction, { max: number; windowSeconds: number }> = {
   upload: { max: 15, windowSeconds: 3600 },
@@ -15,6 +17,8 @@ const LIMITS: Record<RateLimitAction, { max: number; windowSeconds: number }> = 
   like: { max: 80, windowSeconds: 300 },
   message: { max: 80, windowSeconds: 3600 },
   follow: { max: 40, windowSeconds: 3600 },
+  search: { max: 90, windowSeconds: 60 },
+  download: { max: 50, windowSeconds: 3600 },
 };
 
 const MESSAGES: Record<RateLimitAction, string> = {
@@ -24,6 +28,8 @@ const MESSAGES: Record<RateLimitAction, string> = {
   like: "Troppi mi piace in poco tempo. Attendi qualche minuto.",
   message: "Troppi messaggi inviati. Riprova più tardi.",
   follow: "Troppi follow in poco tempo. Riprova più tardi.",
+  search: "Troppe ricerche in poco tempo. Attendi un minuto e riprova.",
+  download: "Troppi download in poco tempo. Riprova più tardi.",
 };
 
 export async function checkRateLimit(
