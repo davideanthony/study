@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { SITE_NAME } from "@/lib/constants";
 
 type MobileNavDrawerProps = {
@@ -28,6 +29,11 @@ function NavIcon({ children }: { children: React.ReactNode }) {
 
 export function MobileNavDrawer({ isLoggedIn, username, isAdmin }: MobileNavDrawerProps) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -86,25 +92,27 @@ export function MobileNavDrawer({ isLoggedIn, username, isAdmin }: MobileNavDraw
         aria-controls="mobile-nav-drawer"
         aria-label="Apri menu"
       >
-        <HamburgerIcon open={false} />
+        <HamburgerIcon open={open} />
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex justify-end" role="presentation">
-          <button
-            type="button"
-            className="absolute inset-0 bg-foreground/20 backdrop-blur-[2px] motion-safe:animate-[fadeIn_0.2s_ease-out]"
-            aria-label="Chiudi menu"
-            onClick={close}
-          />
+      {open &&
+        mounted &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex justify-end" role="presentation">
+            <button
+              type="button"
+              className="absolute inset-0 bg-foreground/20 backdrop-blur-[2px] motion-safe:animate-[fadeIn_0.2s_ease-out]"
+              aria-label="Chiudi menu"
+              onClick={close}
+            />
 
-          <aside
-            id="mobile-nav-drawer"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu di navigazione"
-            className="relative flex h-full w-[min(100%,20rem)] flex-col border-l border-gray-light bg-surface shadow-[var(--shadow-lift)] motion-safe:animate-[slideInRight_0.28s_cubic-bezier(0.22,1,0.36,1)]"
-          >
+            <aside
+              id="mobile-nav-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu di navigazione"
+              className="relative flex h-dvh max-h-dvh w-[min(100%,20rem)] min-h-0 flex-col border-l border-gray-light bg-surface shadow-[var(--shadow-lift)] motion-safe:animate-[slideInRight_0.28s_cubic-bezier(0.22,1,0.36,1)]"
+            >
             <div className="flex items-center justify-between border-b border-gray-light bg-gradient-to-br from-mint-light/60 to-surface px-5 py-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-sage">Menu</p>
@@ -127,7 +135,7 @@ export function MobileNavDrawer({ isLoggedIn, username, isAdmin }: MobileNavDraw
               </div>
             )}
 
-            <nav className="flex-1 overflow-y-auto px-3 py-4">
+            <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1.5">
                 {items.map((item) => (
                   <li key={item.href}>
@@ -182,9 +190,10 @@ export function MobileNavDrawer({ isLoggedIn, username, isAdmin }: MobileNavDraw
             <div className="border-t border-gray-light px-5 py-4">
               <p className="text-center text-xs text-muted">Appunti universitari, semplici.</p>
             </div>
-          </aside>
-        </div>
-      )}
+            </aside>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
