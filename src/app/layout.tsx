@@ -46,8 +46,8 @@ export const metadata: Metadata = {
     images: [LOGO_SRC],
   },
   icons: {
-    icon: [{ url: FAVICON_SRC, type: "image/png" }],
-    apple: [{ url: FAVICON_SRC, type: "image/png" }],
+    icon: [{ url: FAVICON_SRC, type: "image/avif" }],
+    apple: [{ url: FAVICON_SRC, type: "image/avif" }],
   },
 };
 

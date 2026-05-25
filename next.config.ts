@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/logo-icon.png",
+        source: "/logo.avif",
         headers: [
           {
             key: "Cache-Control",
