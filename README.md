@@ -64,7 +64,34 @@ Variabili consigliate:
 | `SENTRY_DSN` | Monitoring errori (server) |
 | `NEXT_PUBLIC_SENTRY_DSN` | Opzionale, errori client (può coincidere con `SENTRY_DSN`) |
 
-Aggiorna redirect URL Supabase con il dominio di produzione. Esegui anche la migration **007** per le notifiche realtime.
+### Dominio custom (Vercel + Supabase)
+
+Quando colleghi un dominio personalizzato, aggiorna entrambi i pannelli:
+
+1. **Vercel → Project → Domains**
+   - aggiungi il dominio (es. `app.tuodominio.it`);
+   - imposta redirect da eventuale dominio secondario (`www`) verso il dominio canonico.
+
+2. **Vercel → Environment Variables**
+   - imposta `NEXT_PUBLIC_SITE_URL=https://app.tuodominio.it`;
+   - aggiorna `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` allo stesso host, se usi Plausible.
+
+3. **Supabase → Authentication → URL Configuration**
+   - Site URL: `https://app.tuodominio.it`;
+   - Redirect URLs (consigliato includere tutti gli ambienti usati):
+     - `http://localhost:3000/auth/callback`
+     - `https://app.tuodominio.it/auth/callback`
+     - `https://app.tuodominio.it/auth/reset-password`
+     - `https://<project>.vercel.app/auth/callback` (fallback)
+     - `https://<project>.vercel.app/auth/reset-password` (fallback)
+
+4. **OAuth provider (Google/Apple)**
+   - allinea gli "Authorized redirect URI" agli stessi callback configurati in Supabase.
+
+5. **Redeploy su Vercel**
+   - dopo update dominio/env, fai un nuovo deploy per propagare i valori.
+
+Il codice usa `NEXT_PUBLIC_SITE_URL` per generare i link auth e, in fallback, `VERCEL_URL`, quindi non servono cambi applicativi per il dominio in sé. Esegui anche la migration **007** per le notifiche realtime.
 
 ## Performance
 
@@ -77,11 +104,11 @@ Vedi [docs/PERFORMANCE.md](docs/PERFORMANCE.md) per cache, logo AVIF, indici DB 
 
 ## Plausible Analytics
 
-1. Crea account su [plausible.io](https://plausible.io) e aggiungi il sito (es. `stufy.vercel.app`).
+1. Crea account su [plausible.io](https://plausible.io) e aggiungi il sito (es. `app.tuodominio.it`).
 2. In `.env.local` (e su Vercel → Environment Variables):
 
 ```env
-NEXT_PUBLIC_PLAUSIBLE_DOMAIN=stufy.vercel.app
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=app.tuodominio.it
 ```
 
 3. Redeploy. Il pacchetto `@plausible-analytics/tracker` invia pageview ed eventi (`signup`, `note_upload`, `note_download`) solo se la variabile è impostata.
