@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type NotificationsBellClientProps = {
@@ -14,6 +14,7 @@ export function NotificationsBellClient({
   initialUnread,
 }: NotificationsBellClientProps) {
   const [unread, setUnread] = useState(initialUnread);
+  const instanceId = useId().replace(/:/g, "");
 
   useEffect(() => {
     setUnread(initialUnread);
@@ -21,43 +22,52 @@ export function NotificationsBellClient({
 
   useEffect(() => {
     const supabase = createClient();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    const channel = supabase
-      .channel(`notifications:${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${userId}`,
-        },
-        () => {
-          setUnread((n) => n + 1);
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          const row = payload.new as { read_at: string | null };
-          const old = payload.old as { read_at: string | null };
-          if (!old?.read_at && row.read_at) {
-            setUnread((n) => Math.max(0, n - 1));
-          }
-        },
-      )
-      .subscribe();
+    try {
+      // Use a per-instance channel name to avoid collisions between
+      // desktop/mobile header mounts.
+      channel = supabase
+        .channel(`notifications:${userId}:${instanceId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
+          },
+          () => {
+            setUnread((n) => n + 1);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            const row = payload.new as { read_at: string | null };
+            const old = payload.old as { read_at: string | null };
+            if (!old?.read_at && row.read_at) {
+              setUnread((n) => Math.max(0, n - 1));
+            }
+          },
+        )
+        .subscribe();
+    } catch (error) {
+      console.error("Failed to subscribe notifications channel", error);
+    }
 
     return () => {
-      void supabase.removeChannel(channel);
+      if (channel) {
+        void supabase.removeChannel(channel);
+      }
     };
-  }, [userId]);
+  }, [instanceId, userId]);
 
   return (
     <Link
