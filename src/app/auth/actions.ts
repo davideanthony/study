@@ -32,11 +32,15 @@ export async function signUp(formData: FormData) {
     );
   }
 
+  const siteUrl = getSiteUrl().origin;
+  const emailRedirectTo = `${siteUrl}/auth/callback`;
+
   const { data: signUpData, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { username, full_name: fullName },
+      emailRedirectTo,
     },
   });
 
@@ -45,6 +49,14 @@ export async function signUp(formData: FormData) {
       ? "Questa email è già registrata."
       : error.message;
     redirect(`/auth/signup?error=${encodeURIComponent(msg)}`);
+  }
+
+  // Supabase returns a user without identities when the email is already registered
+  // (anti-enumeration). No confirmation email is sent in that case.
+  if (signUpData.user && signUpData.user.identities?.length === 0) {
+    redirect(
+      `/auth/signup?error=${encodeURIComponent("Questa email è già registrata. Se non hai confermato l'account, richiedi un nuovo link qui sotto.")}&email=${encodeURIComponent(email)}`,
+    );
   }
 
   if (signUpData.user) {
@@ -62,7 +74,7 @@ export async function signUp(formData: FormData) {
   }
 
   if (!signUpData.session) {
-    redirect("/auth/signup?check_email=1");
+    redirect(`/auth/signup?check_email=1&email=${encodeURIComponent(email)}`);
   }
 
   redirect("/profilo?registered=1");
@@ -77,11 +89,39 @@ export async function signIn(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("email not confirmed")) {
+      redirect(
+        `/auth/signup?check_email=1&email=${encodeURIComponent(email)}&error=${encodeURIComponent("Conferma l'email prima di accedere. Puoi richiedere un nuovo link qui sotto.")}`,
+      );
+    }
     redirect(`/auth/login?error=${encodeURIComponent(error.message)}`);
   }
 
   const next = safeRedirectPath(String(formData.get("next") ?? ""));
   redirect(next);
+}
+
+export async function resendConfirmationEmail(formData: FormData) {
+  const supabase = await createClient();
+  const email = String(formData.get("email") ?? "").trim();
+
+  if (!email) {
+    redirect("/auth/signup?error=Inserisci la tua email.");
+  }
+
+  const siteUrl = getSiteUrl().origin;
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: `${siteUrl}/auth/callback` },
+  });
+
+  if (error) {
+    redirect(`/auth/signup?check_email=1&email=${encodeURIComponent(email)}&error=${encodeURIComponent(error.message)}`);
+  }
+
+  redirect(`/auth/signup?check_email=1&email=${encodeURIComponent(email)}&resent=1`);
 }
 
 export async function requestPasswordReset(formData: FormData) {

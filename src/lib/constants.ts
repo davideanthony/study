@@ -107,7 +107,7 @@ export const REPORT_REASONS = [
 export const SITE_NAME = "Stufy";
 export const LOGO_VERSION = "4";
 /** Logo header (AVIF in /public, da images/logo1.avif). */
-export const LOGO_SRC = `/logo1.avif?v=${LOGO_VERSION}`;
+export const LOGO_SRC = "/logo1.avif";
 /** Favicon / icona scheda browser (AVIF in /public, da images/logo.avif). */
 export const FAVICON_SRC = `/logo.avif?v=${LOGO_VERSION}`;
 
